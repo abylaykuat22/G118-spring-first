@@ -6,6 +6,7 @@ import kz.bitlab.G118springfirstapp.model.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -20,11 +21,8 @@ public class HomeController {
   }
 
   /**
-   * String email = req.getParameter("email");
-   * String fullName = req.getParameter("fullName");
-   * User user = new User();
-   * user.setEmail(email);
-   * user.setFullName(fullName);.
+   * String email = req.getParameter("email"); String fullName = req.getParameter("fullName"); User
+   * user = new User(); user.setEmail(email); user.setFullName(fullName);.
    *
    * @param user новый пользователь
    * @return главная страница.
@@ -40,5 +38,36 @@ public class HomeController {
     User user = DbManager.getUserById(id);
     model.addAttribute("user", user);
     return "userDetails";
+  }
+
+  @PostMapping("/user-edit/{id}")
+  public String editUser(@RequestParam String email,
+      @RequestParam(name = "fullname") String fullName,
+      @PathVariable Long id) {
+    if (fullName == null || fullName.isEmpty() || email == null || email.isEmpty()) {
+      throw new IllegalArgumentException("Parameters can not be null");
+    }
+    DbManager.editUser(id, email, fullName);
+    return "redirect:/";
+  }
+
+  @PostMapping("/user-delete/{id}")
+  public String deleteUser(@PathVariable(name = "id") Long userId) {
+    DbManager.deleteUserById(userId);
+    return "redirect:/";
+  }
+
+  @GetMapping("/search")
+  public String search(@RequestParam String search, Model model) {
+    List<User> users = DbManager.findUsers(search);
+    model.addAttribute("users", users);
+    return "home";
+  }
+
+  @GetMapping("/search-alt")
+  public String searchAlt(@RequestParam String search, Model model) {
+    String users = DbManager.findUsersAlt(search);
+    model.addAttribute("usersAlt", users);
+    return "home";
   }
 }
